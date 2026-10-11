@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Completar arquivos de plataforma
+        run: flutter create . --org br.com.lucasamado --project-name caixinha --platforms=android
+
+      - name: Dependências
+        run: flutter pub get
+
+      - name: Geração de código
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Análise estática
+        run: flutter analyze --no-fatal-infos
+
+      - name: Testes
+        run: flutter test --coverage
+
+      - name: Build do APK
+        run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: caixinha-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go build -o caixinha-server .

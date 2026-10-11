@@ -1,0 +1,10 @@
+services:
+  caixinha:
+    build: .
+    restart: unless-stopped
+    environment:
+      CAIXINHA_TOKENS: ${CAIXINHA_TOKENS}
+    volumes:
+      - ./data:/data
+    ports:
+      - "8080:8080"

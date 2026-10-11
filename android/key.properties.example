@@ -1,0 +1,4 @@
+storePassword=troque-aqui
+keyPassword=troque-aqui
+keyAlias=upload
+storeFile=upload-keystore.jks
